@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql:latest
+    container_name: "mysql"
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ogtech
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mysqluser", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - db_mysql:/var/lib/mysql
+  ecom:
+    build:
+      context: .
+    container_name: "ecom"
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html
+    
+    depends_on:
+      - mysql
+  nginx:
+    image: nginx:alpine
+    container_name: "nginx"
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - .:/var/www/html
+    depends_on:
+      - ecom
+    
+
+volumes:
+  db_mysql:

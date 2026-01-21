@@ -28,24 +28,16 @@ class Signup extends Dbhandler {
   }
 
   protected function checkUser($username, $email) {
-    $sql = "SELECT Username FROM Members WHERE Username = ? 
-      OR Email = ?;";
-    $stmt = $this->conn()->stmt_init();
+    $sql = "SELECT Username FROM Members WHERE Username = ? OR Email = ?";
+    
+    $conn = $this->getConn();
+    var_dump($conn); die();         
 
-    if (!$stmt->prepare($sql))
-    {
-      header("location: ../login.php?error=stmtfailed");
-      exit();
-    }
-
+    $stmt = $conn->prepare($sql);   
     $stmt->bind_param("ss", $username, $email);
     $stmt->execute();
-    
+
     $result = $stmt->get_result();
-
-    if ($row = $result->fetch_assoc()) return $row;
-    else return false;
-
-    $stmt->close();
+    return $result->fetch_assoc() ?: false;
   }
 }
